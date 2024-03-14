@@ -12,7 +12,7 @@ struct Monitor {
     #[serde(rename = "type")]
     mytype: Option<String>,
     script: Option<String>,
-    result: Option<String>,
+    result: Option<Result1>,
     code: String,
 }
 
@@ -30,7 +30,7 @@ struct Result1{
 fn main() -> Result<(), std::io::Error> {
     let input_path = std::env::args().nth(1).unwrap();
     
-    let monitor1 = {
+    let mut monitor1 = {
         let monitor = std::fs::read_to_string(&input_path)?;
 
         // Load the Monitors structure from the string.
@@ -53,7 +53,7 @@ fn main() -> Result<(), std::io::Error> {
     let mut file = File::create("D:/process_monitor/assets/output.json").expect("Failed to create file");
     let mut vector: Vec<serde_json::Value> = Vec::new();
 
-    for m in monitor1.monitors {
+    for m in &mut monitor1.monitors {
         my_instance.value = rng.gen_range(0..100);
         my_instance.processed_at = seconds_since_epoch;
 
@@ -61,10 +61,10 @@ fn main() -> Result<(), std::io::Error> {
             value: my_instance.value,
             processed_at: my_instance.processed_at,
         };
-        println!("Monitor: {:?}, Results: {:?}", m, result_data);
+        m.result = Some(result_data);
+        println!("Monitor: {:?}", m);
 
         vector.push(serde_json::to_value(m).unwrap());
-        vector.push(serde_json::to_value(result_data).unwrap());
 
     }
     let json_output = serde_json::to_string_pretty(&vector).unwrap();
